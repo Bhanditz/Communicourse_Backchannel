@@ -1,7 +1,36 @@
-@(message: String)
+@(stream: Call, post: Call)(implicit req: RequestHeader)
 
 @main("Welcome to Play") {
 
-    @play20.welcome(message)
+    <div id="log"></div>
+    <input type="text" name ="message" placeholder="your message"/>
+
+    <script>
+
+        var feed = new EventSource("@stream.absoluteURL()");
+        feed.addEventListener("message", function(msg){
+            var m = JSON.parse(msg.data);
+            console.log(m);
+            $("#log").append("<div>"+m.user + ": " + m.message+"</div>");
+        })
+
+        var sendJson = function (m) {
+            $.ajax({
+                url: "@post.toString",
+                data: JSON.stringify(m),
+                method: "post",
+                contentType: "application/json"
+            })
+        };
+        var user = prompt("What should be your username");
+        $("input").on("keyup", function (e) {
+            if(e.keyCode != 13) {
+                return;
+            }
+            var m = {message: this.value, user: user};
+            this.value = "";
+            sendJson(m)
+        });
+    </script>
 
 }
