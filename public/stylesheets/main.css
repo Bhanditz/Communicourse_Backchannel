@@ -9,7 +9,7 @@
 }
 
 .botMessage {
-    color: orange;
+    color: orange!important;
 }
 
 .friendsMessage {

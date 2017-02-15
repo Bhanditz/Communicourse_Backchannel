@@ -2,6 +2,8 @@ package CommunicationProtocol
 
 import java.security.PrivilegedExceptionAction
 
+import CommunicationProtocol.Chatroom.{Broadcast, Unicast}
+import akka.actor.ActorRef
 import play.api.i18n.Messages.Message
 
 /**
@@ -17,7 +19,6 @@ object BotInstructions {
     if (s.contains(BOTHANDLE)) i + BOTHANDLE.length else -1
   }
 
-  def botMessage(mesage: String) = PrivateMessage(mesage, BOTNAME, true)
-  val generalJsonErrorMessage = botMessage("Your JSON is invalid")
-
+  def botUnicast(message: String, receiver: ActorRef)= Unicast(PrivateMessage(message, BOTNAME, true), receiver)
+  def botBroadcast(message: String) = Broadcast(PublicMessage(message, BOTNAME, true))
 }
