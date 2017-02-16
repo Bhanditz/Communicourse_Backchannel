@@ -20,10 +20,11 @@ import scala.concurrent.{ExecutionContext, Future}
 object Protocol {
 
   def messageCheck(clientMessage: ClientMessage,botLang: BotLanguage, bot: ActorRef, sender: ActorRef): Either[ChatroomMessage, Any] = {
+      val clientMessage_ = clientMessage.copy (message = clientMessage.message + s" me=${clientMessage.user}")
       val botCommandPosition = extractMessageForBotPos(clientMessage.message)
       //evertything after hey_arjen
       if(botCommandPosition >= 0){
-        val command =  clientMessage.message.drop(botCommandPosition).take(128)
+        val command =  clientMessage_.message.drop(botCommandPosition).take(128)
         command.isEmpty match {
           case true => {
             Left(botUnicast("You did not give me any instructions :-(", sender))
@@ -65,9 +66,10 @@ object Protocol {
             case _ => {
               val answers_ = aqa.answers.map(triple => {
                 val (indicator, answer, bool) = triple
-                s"${indicator}: ${answer}\n"
-              }) mkString "\n"
-               botUnicast(s"I added your answers: ${answers_} to the quiz  --> ${aqa.name} <--", sender)
+                s"${indicator.fold(_.toString, _.toString)}: ${answer}"
+              })
+               botUnicast(s"I added your answers:${System.lineSeparator}"
+                 + s"${answers_.mkString(System.lineSeparator)} to the quiz  --> ${aqa.name} <--", sender)
             }
           }
         })
@@ -76,7 +78,7 @@ object Protocol {
         val future = bot ? aq
         future.map({
           case QuizActor.NoSuchQuiz => botUnicast(s"I could not find a quiz with the name --> ${aq.quizName} <--", sender)
-          case _ => {botBroadcast(s"${userName} answered quiz --> ${quizName} <-- with ${usersAnswer}")}
+          case _ => {botBroadcast(s"${userName} answered quiz --> ${quizName} <-- with ${usersAnswer.fold(_.toString, _.toString)}")}
         })
       }
       case pq @ QuizActor.PublishQuiz(quizName: String) => {
@@ -95,15 +97,49 @@ object Protocol {
             botBroadcast(s"The quiz --> ${name} <-- has been evaluated.\nHere are the winners:\n==========\n${winnerList mkString("\n")}\n==========")
         }
       })}
+
       case gpq @ QuizActor.GetPublishedQuizzes => {
         val future = bot ? gpq
         future.map({
-          case QuizActor.PublishedQuizzes(map) => botUnicast(map.map(_._2._1.toString()).toList.mkString(" "), sender)
-          case _ =>  botUnicast(s"I could not find any published quizzes.", sender)
+          case QuizActor.PublishedQuizzes(map) => {
+            if(map.isEmpty){
+              botUnicast(s"I could not find any published quizzes.", sender)
+            } else {
+              botUnicast(map.map(_._2._1.toString()).toList.mkString(" "), sender)
+            }
+          }
         })
       }
-      case gs @ QuizActor.GetScoreboard => ???
-      case dq @ QuizActor.RemoveQuiz(quizName: String) => ???
+
+      case gs @ QuizActor.GetScoreboard => {
+        val future = bot ? gs
+        future.map({
+          //QuizManager.prettifyScoreboard(scoreboard)
+          case QuizActor.Scoreboard(scoreboard) => {
+            if(scoreboard.isEmpty) {
+              botUnicast("The scoreboard is empty", sender)
+            } else {
+              botUnicast(QuizManager.prettifyScoreboard(scoreboard),sender)
+            }
+          }
+        })
+      }
+
+      //case dq @ QuizActor.RemoveQuiz(quizName: String) => ???
+
+      case pq @ QuizActor.GetPendingQuizzes => {
+        val future = bot ? pq
+        future.map({
+          case QuizActor.PendingQuizzes(pendingQuizzes) => {
+            if(pendingQuizzes.isEmpty){
+              botUnicast("I cannot find any pending quizzes",sender)
+            }
+            else {
+              botUnicast(pendingQuizzes.map(_._2.run(QuizState())).map(_.toString()).mkString("\n"), sender)
+            }
+          }
+        })
+      }
     }
   }
   }
