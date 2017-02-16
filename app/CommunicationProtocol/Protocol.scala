@@ -13,7 +13,7 @@ import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global._
 import scala.util.parsing.combinator._
 import scala.collection.immutable.StringOps
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 /**
   * Created by robertMueller on 15.02.17.
   */
@@ -42,24 +42,24 @@ object Protocol {
     }
 
 
-
-  def processParsedQuizMessages(bot: ActorRef)(self: ActorRef)(sender: ActorRef)(message: Any)(implicit ec: ExecutionContext) = {
+  def authorizationCheck(quizName: String, user: String) = ???
+  def processParsedQuizMessages(bot: ActorRef)(sender: ActorRef)(message: Any)(implicit ec: ExecutionContext): Future[ChatroomMessage] = {
     implicit val timeout = Timeout(2.seconds)
     message match {
       case nq @ QuizActor.NewQuiz(quizName: String) => {
         bot ! nq
-        self ! botBroadcast(s"I created a quiz called --> ${nq.name} <--")
+        Future(botBroadcast(s"I created a quiz called --> ${nq.name} <--"))
       }
       case aq @ QuizActor.AddQuizQuestion(quizName, question) => {
         val future = bot ? aq
-        future.foreach({
-          case QuizActor.NoSuchQuiz => self ! botUnicast(s"I could not find a quiz with the name --> ${aq.name} <--", sender)
-          case _ => self ! botUnicast(s"I added the question: \n ${aq.question} \n to the quiz  --> ${aq.name} <--", sender)
+        future.map({
+          case QuizActor.NoSuchQuiz => botUnicast(s"I could not find a quiz with the name --> ${aq.name} <--", sender)
+          case _ => botUnicast(s"${System.lineSeparator}I added the question: ${System.lineSeparator} ${aq.question} ${System.lineSeparator} to the quiz  --> ${aq.name} <--", sender)
         })
       }
       case aqa @ QuizActor.AddQuizAnswers(quizName, answers) => {
         val future = bot ? aqa
-        future.foreach(msg => {
+        future.map(msg => {
           msg match {
             case QuizActor.NoSuchQuiz => botUnicast(s"I could not find a quiz with the name --> ${aqa.name} <--", sender)
             case _ => {
@@ -67,24 +67,43 @@ object Protocol {
                 val (indicator, answer, bool) = triple
                 s"${indicator}: ${answer}\n"
               }) mkString "\n"
-              self ! botUnicast(s"I added you answers: ${answers_} to the quiz  --> ${aqa.name} <--", sender)
+               botUnicast(s"I added your answers: ${answers_} to the quiz  --> ${aqa.name} <--", sender)
             }
           }
         })
       }
       case aq @ QuizActor.AnswerQuiz(userName, quizName, usersAnswer) => {
         val future = bot ? aq
-        future.foreach({
-          case QuizActor.NoSuchQuiz => self ! botUnicast(s"I could not find a quiz with the name --> ${aq.userName} <--", sender)
-          case _ => {
-            self ! botBroadcast(s"${userName} answered quiz --> ${quizName} <-- with ${usersAnswer}")
-          }
+        future.map({
+          case QuizActor.NoSuchQuiz => botUnicast(s"I could not find a quiz with the name --> ${aq.quizName} <--", sender)
+          case _ => {botBroadcast(s"${userName} answered quiz --> ${quizName} <-- with ${usersAnswer}")}
         })
       }
-      case pq @ QuizActor.PublishQuiz(quizName: String) => ???
-      case eq @ QuizActor.EvaluateQuiz(name: String) => ???
-      case gpq @ QuizActor.GetPublishedQuizzes => ???
+      case pq @ QuizActor.PublishQuiz(quizName: String) => {
+        val future = bot ? pq
+        future.map({
+          case QuizActor.NoSuchQuiz => botUnicast(s"I could not find a quiz with the name --> ${pq.name} <--", sender)
+          case QuizActor.PublishQuizFailure(reason) => {botUnicast(s"There was an error publishing your quiz. Reason: ${reason.toString()}", sender)}
+          case QuizActor.QuizSuccess => {botBroadcast(s"A new quiz with the name --> ${quizName} <-- has been published")}
+        })
+      }
+      case eq @ QuizActor.EvaluateQuiz(name: String) => {
+        val future = bot ? eq
+        future.map({
+          case QuizActor.NoSuchQuiz => botUnicast(s"I could not find a quiz with the name --> ${eq.name} <--", sender)
+          case QuizActor.QuizEvaluationResults(winnerList) => {
+            botBroadcast(s"The quiz --> ${name} <-- has been evaluated.\nHere are the winners:\n==========\n${winnerList mkString("\n")}\n==========")
+        }
+      })}
+      case gpq @ QuizActor.GetPublishedQuizzes => {
+        val future = bot ? gpq
+        future.map({
+          case QuizActor.PublishedQuizzes(map) => botUnicast(map.map(_._2._1.toString()).toList.mkString(" "), sender)
+          case _ =>  botUnicast(s"I could not find any published quizzes.", sender)
+        })
+      }
       case gs @ QuizActor.GetScoreboard => ???
+      case dq @ QuizActor.RemoveQuiz(quizName: String) => ???
     }
   }
   }

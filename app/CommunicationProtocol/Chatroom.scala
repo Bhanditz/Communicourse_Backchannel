@@ -35,10 +35,10 @@ class Chatroom(val name: String) extends Actor {
     case cm@ClientMessage(m,u,_) => {
       Protocol.messageCheck(cm, new QuizBotLanguage, quizBot, sender()).fold(
         message => {self ! message},
-        processParsedQuizMessages(quizBot)(self)(sender())(_)
+        //FUTURES! - DO THE MESSAGE PASSING INSIDE OF THE FUTURE OR THE ACTOR WILL CLOSE OVER / BLOCK
+        processParsedQuizMessages(quizBot)(sender())(_) foreach (m_ => self ! m_)
       )
         //hey_arjen politics add question how tall is angela merkel?
-        //result => {self ! processParsedQuizMessages(quizBot)(sender())(result)}
         }
     case Broadcast(message) => users.foreach(_ ! message)
     case Unicast(message, sender) => sender ! message
