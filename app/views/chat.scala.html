@@ -1,4 +1,4 @@
-@(implicit req: RequestHeader)
+@(implicit req: RequestHeader,username: String)
 
 @main("Chatroom") {
 
@@ -42,9 +42,9 @@
 
     <script>
 
-            var user = prompt("What should be your username");
-        var websocket = new WebSocket("@controllers.routes.Application.chatUserSocket.webSocketURL()");
-        websocket.onmessage = function(msgFromSocket) {
+            var user = "@username";
+            var websocket = new WebSocket("@controllers.routes.Application.chatUserSocket.webSocketURL()");
+            websocket.onmessage = function(msgFromSocket) {
             var m = JSON.parse(msgFromSocket.data);
             console.log(m);
             console.log(msgFromSocket);
