@@ -25,7 +25,7 @@ class ChatUser(out: ActorRef, chatroom: ActorRef)extends Actor{
 
   override def receive: Receive = LoggingReceive{
     /*=====DOWNWARDS MESSAGES=====*/
-    case prm @ PrivateMessage(m,u,b) => out ! ClientMessage(m, "(private) " + u ,b)
+    case prm @ PrivateMessage(m,u,b) => out ! ClientMessage(m, u + "(private) " ,b)
     case pm @ PublicMessage(m,u,b) => out ! ClientMessage(m,u,b)
     /*=====UPWARDS MESSAGES=====*/
     case cm @ ClientMessage(m,_,_) => chatroom ! cm // hoch

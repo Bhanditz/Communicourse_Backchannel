@@ -12,6 +12,7 @@ import BotInstructions._
 import scala.concurrent.duration._
 import Protocol._
 import Quiz.QuizActor.GetPendingQuizzes
+import UserGeneratedInfo.{UserGeneratedInfoActor, UserGeneratedInfoLanguage}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 /**
@@ -29,17 +30,21 @@ object Chatroom {
 class Chatroom(val name: String) extends Actor {
   implicit val timeout = Timeout(2 seconds)
   val quizBot = context.actorOf(QuizActor.props, "quiz-actor")
+  val userGeneratedInfoBot = context.actorOf(UserGeneratedInfoActor.props, "user-generated-info-actor")
   var users: Set[ActorRef] = Set.empty
 
   override def receive: Receive = {
     case cm@ClientMessage(m,u,_) => {
+
+      //FUTURES! - DO THE MESSAGE PASSING INSIDE OF THE FUTURE OR THE ACTOR WILL CLOSE OVER / BLOCK
       Protocol.messageCheck(cm, new QuizBotLanguage, quizBot, sender()).fold(
-        message => {self ! message},
-        //FUTURES! - DO THE MESSAGE PASSING INSIDE OF THE FUTURE OR THE ACTOR WILL CLOSE OVER / BLOCK
+        _ => Protocol.messageCheck(cm, new UserGeneratedInfoLanguage, userGeneratedInfoBot,sender()).fold(
+          message => {self ! message},
+          processValueProposalMessages(userGeneratedInfoBot)(sender())(_) foreach(m_ => self ! m_)
+        ),
         processParsedQuizMessages(quizBot)(sender())(_) foreach (m_ => self ! m_)
-      )
-        //hey_arjen politics add question how tall is angela merkel?
-        }
+      )}
+
     case Broadcast(message) => users.foreach(_ ! message)
     case Unicast(message, sender) => sender ! message
     case Join(actorRef: ActorRef) => users += actorRef
