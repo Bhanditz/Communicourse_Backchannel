@@ -1,20 +1,14 @@
 package CommunicationProtocol
-import akka.pattern.ask
-import CommunicationProtocol.Chatroom.{Broadcast, Join, Leave, Unicast}
-import Quiz.{QuizActor, QuizBotLanguage}
-import akka.actor.{Actor, ActorRef, Props}
-import akka.actor.Actor.Receive
-import akka.event.LoggingReceive
-import akka.util.Timeout
-import play.api.libs.json.Json
-import BotInstructions._
 
-import scala.concurrent.duration._
-import Protocol._
-import Quiz.QuizActor.GetPendingQuizzes
+import CommunicationProtocol.Chatroom.{Broadcast, Join, Leave, Unicast}
+import CommunicationProtocol.Protocol._
+import Quiz.{QuizActor, QuizBotLanguage}
 import UserGeneratedInfo.{UserGeneratedInfoActor, UserGeneratedInfoLanguage}
+import akka.actor.{Actor, ActorRef, Props}
+import akka.util.Timeout
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration._
 /**
   * Created by robertMueller on 15.02.17.
   */

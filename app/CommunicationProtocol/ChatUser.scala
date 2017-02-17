@@ -1,10 +1,7 @@
 package CommunicationProtocol
 
-import CommunicationProtocol.ChatUser
 import CommunicationProtocol.Chatroom.{Join, Leave}
-import CommunicationProtocol.Message
 import akka.actor.{Actor, ActorRef, Props}
-import akka.actor.Actor.Receive
 import akka.event.LoggingReceive
 
 /**

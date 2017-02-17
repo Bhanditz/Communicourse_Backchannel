@@ -90,6 +90,11 @@ input.chatPanel__input {
     bottom: 0;
 }
 
+.login-button{
+    width: 50%;
+    margin: auto;
+}
+
 *::-webkit-input-placeholder {
     color: #4db6ac!important;
 }

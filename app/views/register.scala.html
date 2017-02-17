@@ -1,0 +1,45 @@
+@(userForm: Form[models.UserFormData])(implicit messages: Messages)
+@main("Login"){
+  <div class="row container">
+    <div class="input-field col s12">
+      <h2 class = "center-align">Communicourse</h2>
+    </div>
+  </div>
+
+  <div class="row container">
+    <form class="col s8 push-s2" role="form" action='@routes.Application.registerSubmission()' method="post" >
+      <div class="row">
+        <div class="input-field col s12">
+          <input placeholder="Username" id="user_name" type="text" class="validate" name="userName">
+          <label for="user_name"></label>
+        </div>
+      </div>
+      <div class="row">
+        <div class="input-field col s12">
+          <input  placeholder="Email" id="email" type="email" class="validate" name="email">
+          <label for="email"></label>
+        </div>
+      </div>
+      <div class="row">
+        <div class="input-field col s12">
+          <input  placeholder="Password" id="password" type="password" class="validate" name="password">
+          <label for="password"></label>
+        </div>
+      </div>
+      <div class="row">
+        <div class="input-field col s12">
+          <input  placeholder="Role" id="role" type="text" class="validate" name="role">
+          <label for="role"></label>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col s12">
+          <div class="center-align">
+            <input type="submit" class="waves-effect waves-light btn register-button" id="login_submit_button" value="Login">
+          </div>
+        </div>
+      </div>
+
+    </form>
+  </div>
+}

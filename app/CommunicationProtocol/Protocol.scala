@@ -1,20 +1,15 @@
 package CommunicationProtocol
 
+import CommunicationProtocol.BotInstructions._
 import CommunicationProtocol.Chatroom.{Broadcast, ChatroomMessage}
-import Quiz.QuizBotLanguage
 import Quiz._
-import BotInstructions._
 import Traits._
 import UserGeneratedInfo.{UserGeneratedInfoActor, ValueProposal}
-import UserGeneratedInfo.UserGeneratedInfoActor.AddedProposal
 import akka.actor.ActorRef
 import akka.pattern.ask
 import akka.util.Timeout
 
 import scala.concurrent.duration._
-import scala.concurrent.ExecutionContext.Implicits.global._
-import scala.util.parsing.combinator._
-import scala.collection.immutable.StringOps
 import scala.concurrent.{ExecutionContext, Future}
 /**
   * Created by robertMueller on 15.02.17.
