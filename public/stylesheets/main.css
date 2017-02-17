@@ -88,6 +88,9 @@ input.chatPanel__input {
     position: absolute;
     width: 70%!important;
     bottom: 0;
+    padding: 1em!important;
+    background: whitesmoke!important;
+    border-radius: 5px!important;
 }
 
 .login-button{
