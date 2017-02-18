@@ -1,6 +1,6 @@
 *{
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box!important;
+    -moz-box-sizing: border-box!important;
     box-sizing: border-box!important;
 }
 html, body {
@@ -97,6 +97,12 @@ input.chatPanel__input {
     width: 50%;
     margin: auto;
 }
+
+.halfWidth {
+    width: 50%;
+}
+
+
 
 *::-webkit-input-placeholder {
     color: #4db6ac!important;

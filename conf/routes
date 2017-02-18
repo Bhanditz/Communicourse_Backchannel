@@ -3,16 +3,15 @@
 # ~~~~
 
 # Home page
-GET     /                             @controllers.Application.login
-#POST    /post                        @controllers.Application.postMessage
-#GET    /stream                       @controllers.Application.chatFeed
-GET      /chat/:username              @controllers.Application.chat(username: String)
-GET     /chatSocket                   @controllers.Application.chatUserSocket
-GET     /register                     @controllers.Application.register
-POST   /evalregister                  @controllers.Application.registerSubmission
-POST   /evalLogin                     @controllers.Application.loginSubmission
+GET         /                                    @controllers.Application.login
+GET         /chat/:username/:chatroomName        @controllers.Application.chat(username: String, chatroomName: String)
+POST         /newChatroom                        @controllers.Application.createChatroom
+GET         /chatroomSocket/:chatroomName        @controllers.Application.getChatroom(chatroomName: String)
+GET         /register                            @controllers.Application.register
+POST        /evalregister                        @controllers.Application.registerSubmission
+POST        /loggedIn                            @controllers.Application.loginSubmission
 
 # Map static resources from the /public folder to the /assets URL path
-GET     /assets/*file               @controllers.Assets.at(path="/public", file)
+GET         /assets/*file                        @controllers.Assets.at(path="/public", file)
 
     

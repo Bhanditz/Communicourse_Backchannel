@@ -30,19 +30,42 @@ import scala.concurrent.Future
 @Singleton
 class Application @Inject() (system: ActorSystem) extends Controller {
 
+  /*=====Chatroom Management=====*/
+  val chatroomSystem = ActorSystem("chatroom-actor-system")
+  val defaultRoomName = "CommuniRoom"
+  val defaultRoom = new ChatroomController(system, chatroomSystem, defaultRoomName)
+  var chatrooms = Map((defaultRoomName -> defaultRoom))
+  def newChatroom(name: String) = chatrooms += (name -> new ChatroomController(system, chatroomSystem, name))
+  def getChatroom(name: String) = chatrooms.get(name).getOrElse(defaultRoom).chatUserSocket //TODO arjen soll was sagen
+
+  def chatHttp(implicit req: RequestHeader, username: String, chatroomName: String = defaultRoomName) =
+    Ok(views.html.chat(req, username, chatroomName, chatrooms.keys))
+
+  def chat(username: String, chatroomName: String) = Action {
+    implicit req =>
+    chatHttp(req, username, chatroomName)//real user?
+  }
+
+  def createChatroom = Action {
+    implicit req =>
+      models.NewChatroomForm.form.bindFromRequest.fold(
+        formWithErrors => BadRequest,
+        data => {
+          newChatroom(data.name)
+          chatHttp(req, req.session.get("username").get, data.name)
+        }
+      )
+  }
+
+
+  /*=====Authorization=====*/
   def login = Action {implicit req =>
     Ok(views.html.login())
   }
 
-  def chat(username: String) = Action { implicit req =>
-    Ok(views.html.chat(req, username)) //real user?
-  }
   def register = Action {implicit req=>
     Ok(views.html.register(models.UserFormData.form))
   }
-  /*def login = Action {implicit req=>
-    Ok(views.html.login(models.UserFormData.form))
-  }*/
 
   def loginSubmission = Action.async {implicit req =>
     models.LoginUserFormData.form.bindFromRequest.fold(
@@ -51,14 +74,12 @@ class Application @Inject() (system: ActorSystem) extends Controller {
         UserService.checkUser(userLoginData.userName, userLoginData.password).map(_.isEmpty).map(b => {
           b match {
             case true => Unauthorized(views.html.login())
-            case false => Ok(views.html.chat(req, username = userLoginData.userName))
+            case false => chatHttp(req, userLoginData.userName).withSession("username"->userLoginData.userName)
           }
         })
       }
     )
   }
-
-
 
   def registerSubmission = Action.async {implicit req =>
     models.UserFormData.form.bindFromRequest.fold(
@@ -71,25 +92,12 @@ class Application @Inject() (system: ActorSystem) extends Controller {
         val role_ = if(userData.role.toLowerCase == "teacher") "teacher" else "student"
         val newUser = models.User(0,role_,userData.userName, userData.password, userData.email)
         UserService.addUser(newUser).map(res => { //TODO verbessern
-          Redirect(routes.Application.chat(newUser.userName)).withSession({"username"->newUser.userName})
+          Redirect(routes.Application.chat(newUser.userName, defaultRoomName)).withSession({"username"->newUser.userName})
         })
 
       }
     )
   }
 
-  /*=====BOT SETUP=====*/
-  import play.api.Play.current
-  implicit val timeout = Timeout(2.seconds)
-  //val actorSystem = ActorSystem("arjen-bot-system")
-  //val quizActor = actorSystem.actorOf(Props[QuizActor], "quiz-actor")
-  val chatroomSystem = ActorSystem("chatroom-actor-system")
-  val chatroom = chatroomSystem.actorOf(Chatroom.props("room_1"), "chatroom-actor")
-
-  implicit val messageFormat = Json.format[ClientMessage]
-  implicit val messageFrameFormatter = FrameFormatter.jsonFrame[ClientMessage]
-  def chatUserSocket = WebSocket.acceptWithActor[ClientMessage, ClientMessage] { request => out =>
-    ChatUser.props(out, chatroom)
-  }
 
 }
