@@ -41,7 +41,7 @@ class Chatroom(val name: String) extends Actor {
 
     case Broadcast(message) => users.foreach(_ ! message)
     case Unicast(message, sender) => sender ! message
-    case Join(actorRef: ActorRef) => users += actorRef
+    case Join(actorRef: ActorRef) => users += actorRef; self ! BotInstructions.botUnicast(s"Welcome to $name.",actorRef)
     case Leave(actorRef: ActorRef) => users -= actorRef
   }
 }

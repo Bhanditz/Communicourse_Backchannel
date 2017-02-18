@@ -19,10 +19,18 @@
                     </div>
                     <div class = "col s12">
                         <ul class = "browser-default">
-                            @for(chatroom <- allChatRooms){
-                                <li>
-                                    <h5 class = "flow-text">@chatroom</h5>
-                                </li>
+                            @for(chatroom <- allChatRooms) {
+                                @if(chatroomName == chatroom) {
+                                    <li>
+                                        <h5 class = "flow-text current_room">@chatroom</h5>
+                                    </li>
+                                } else {
+                                    <li>
+                                        <h5 class = "flow-text">
+                                            <a href="@routes.Application.chat(username, chatroom)">@chatroom</a>
+                                        </h5>
+                                    </li>
+                                }
                             }
                         </ul>
                     </div>

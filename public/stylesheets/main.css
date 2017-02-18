@@ -102,7 +102,10 @@ input.chatPanel__input {
     width: 50%;
 }
 
-
+.current_room {
+    color:#e91e63!important;
+    font-weight: 500!important;
+}
 
 *::-webkit-input-placeholder {
     color: #4db6ac!important;
