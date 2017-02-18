@@ -1,0 +1,71 @@
+@(implicit req: RequestHeader,username: String, allChatRooms: Iterable[String])
+
+@main("Uploads: " ) {
+
+
+
+  <div class="root">
+
+    <div class="row root">
+
+      <div class="col s4 m3 l3 chatroomPanel teal lighten-1">
+        <div class = "row">
+          <div class = "col s12">
+            <h3>Communicourse</h3>
+          </div>
+          <div class = "col s12">
+            <ul class = "browser-default">
+            @for(chatroom <- allChatRooms) {
+                <li>
+                  <h5 class = "flow-text">
+                    <a href="@routes.Application.chat(username, chatroom)">@chatroom</a>
+                  </h5>
+                </li>
+              }
+
+            </ul>
+          </div>
+        </div>
+      </div>
+
+
+      <div class="col s8 m9 l9 chatPanel grey lighten-2">
+
+        <!-UPLOAD-->
+          @helper.form(action = routes.Application.upload, 'enctype -> "multipart/form-data") {
+
+            <input type="file" name="picture">
+
+            <p>
+              <input type="submit">
+            </p>
+
+          }
+
+      </div>
+
+    </div>
+  </div>
+
+
+
+
+
+  <script>
+          var info=window.parent.getGroupInforamtion();
+          var myForm = document.getElementById('uploadform');
+          myForm.setAttribute('action','/addMessage_file/'+info);
+
+          function sendWebsocket(){
+            var text = document.getElementById('doc').value;
+            var pos=text.lastIndexOf("\\");
+            text=text.substring(pos+1);
+            if(text.indexOf(".jpg")!=-1 || text.indexOf(".png")!=-1||text.indexOf(".gif")!=-1||text.indexOf(".jpeg")!=-1 ||  text.indexOf(".bmp")!=-1){
+              window.parent.sendmessage("img", text);
+            }else
+              window.parent.sendmessage("doc", text);
+          }
+
+  </script>
+
+}

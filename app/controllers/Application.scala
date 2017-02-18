@@ -57,7 +57,7 @@ class Application @Inject() (system: ActorSystem) extends Controller {
       )
   }
 
-
+//TODO back to login if session is empty
   /*=====Authorization=====*/
   def login = Action {implicit req =>
     Ok(views.html.login())
@@ -97,6 +97,31 @@ class Application @Inject() (system: ActorSystem) extends Controller {
 
       }
     )
+  }
+
+  def uploadView = Action {implicit req =>
+    Ok(views.html.uploads(req, req.session.get("username").get, allChatRooms = chatrooms.keys))
+  }
+
+
+  /*UPLOAD*/
+  def upload = Action(parse.multipartFormData) { req =>
+    req.body.file("picture").map { picture =>
+      import java.io.File
+      val filename = picture.filename
+      val contentType = picture.contentType
+      val imagesDirectory = Play.application.path + "/public/uploaded/images/"
+      val documentsDirectory = Play.application.path + "/public/uploaded/documents/"
+      val directory = new File(String.valueOf(imagesDirectory));
+      if (!directory.exists()){
+        directory.mkdirs();
+      }
+      picture.ref.moveTo(new File(imagesDirectory + filename))
+      Redirect(routes.Application.upload())
+    }.getOrElse {
+      Redirect(routes.Application.upload()).flashing(
+        "error" -> "Missing file") //TODO toast clientseitig
+    }
   }
 
 
