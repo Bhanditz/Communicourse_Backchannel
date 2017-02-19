@@ -127,6 +127,11 @@ class Application @Inject() (system: ActorSystem) extends Controller {
       } else {
         file.ref.moveTo(rename(documentsDirectory, filename))
       }
+      chatrooms.foreach(cr =>
+        cr._2.chatroom ! CommunicationProtocol.BotInstructions.botBroadcast(
+         s"${req.session.get("username").getOrElse("")} just uploaded a file"
+        )
+      )
       Redirect(routes.Application.upload()).flashing(
         "sucess" -> "File uploaded")
     }.getOrElse {

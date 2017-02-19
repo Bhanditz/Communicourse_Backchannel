@@ -149,11 +149,11 @@ input.chatPanel__input {
 }
 
 
-.collection {
+.chatroomPanel__chatrooms {
     border: 1px solid #00897b!important;
 }
 
-.collection .collection-item {
+.chatroomPanel__chatrooms .collection-item {
     border-bottom: 1px solid #00897b!important;
 }
 
