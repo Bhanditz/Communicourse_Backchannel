@@ -115,6 +115,36 @@ input.chatPanel__input {
     height: 100%;
     overflow: scroll;
 }
+
+.inputfile {
+    width: 0.1px;
+    height: 0.1px;
+    opacity: 0;
+    overflow: hidden;
+    position: absolute;
+    z-index: -1;
+}
+
+.inputfile + label {
+    display: inline-block;
+}
+
+.inputfile:focus + label,
+.inputfile + label:hover {
+    background-color: #ef5350;
+}
+
+.uploadFileForm {
+    z-index: 999!important;
+    position: absolute;
+    bottom: 1rem;
+    right: 1rem;
+}
+
+.uploadFileForm div {
+    margin: 1rem;
+}
+
 *::-webkit-input-placeholder {
     color: #4db6ac!important;
 }

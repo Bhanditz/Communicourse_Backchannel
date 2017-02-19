@@ -1,6 +1,15 @@
 @(implicit req: RequestHeader,username: String, allChatRooms: Iterable[String], images: Array[String], documents: Array[String])
 @main("Box") {
 
+  <form class = "uploadFileForm" action="@routes.Application.upload" method="post" enctype="multipart/form-data">
+    <div>
+      <input type="file" class = "inputfile" id="file" name="file" onchange="javascript:this.form.submit();"/>
+      <label class = "btn-floating btn-large waves-effect waves-light red" for="file"><i class="material-icons">add</i></label>
+    </div>
+
+  </form>
+
+
   <div class="row root">
 
     <div class="col s4 m3 l3 chatroomPanel teal lighten-1">
@@ -24,6 +33,7 @@
 
 
     <div class="col s8 m9 l9 chatPanel imagesAndDocumentsPanel grey lighten-2" >
+
       <div class="row">
         <div class = "col s12 l6">
           <ul class = "collection">
