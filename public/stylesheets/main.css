@@ -103,7 +103,6 @@ input.chatPanel__input {
 }
 
 .current_room {
-    color:#e91e63!important;
     font-weight: 500!important;
 }
 
@@ -144,6 +143,20 @@ input.chatPanel__input {
 .uploadFileForm div {
     margin: 1rem;
 }
+
+.underline {
+    text-decoration: underline;
+}
+
+
+.collection {
+    border: 1px solid #00897b!important;
+}
+
+.collection .collection-item {
+    border-bottom: 1px solid #00897b!important;
+}
+
 
 *::-webkit-input-placeholder {
     color: #4db6ac!important;
