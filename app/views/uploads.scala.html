@@ -1,10 +1,8 @@
-@(implicit req: RequestHeader,username: String, allChatRooms: Iterable[String])
+@(implicit req: RequestHeader,username: String, allChatRooms: Iterable[String], images: Array[String])
 
 @main("Uploads: " ) {
 
 
-
-  <div class="root">
 
     <div class="row root">
 
@@ -29,43 +27,31 @@
       </div>
 
 
-      <div class="col s8 m9 l9 chatPanel grey lighten-2">
+      <div class="col s8 m9 l9 chatPanel grey lighten-2" >
 
-        <!-UPLOAD-->
-          @helper.form(action = routes.Application.upload, 'enctype -> "multipart/form-data") {
+        <div class = "imagesGrid-container">
+          <div class = "grid">
+          @for(image <- images){
+            <div class="cell">
+              <img class="responsive-image" src="@routes.Assets.at("uploaded/images/"+image)">
+            </div>
 
-            <input type="file" name="file">
+            }
+          </div>
 
-            <p>
-              <input type="submit">
-            </p>
+        </div>
 
-          }
+
+          <form action="@routes.Application.upload" method="post" enctype="multipart/form-data" style="position: absolute; bottom: 0;">
+            <div>
+              <input type="file" name="file"/>
+            </div>
+            <input type="submit" value="upload it"/>
+          </form>
 
       </div>
 
     </div>
-  </div>
 
-
-
-
-
-  <script>
-          var info=window.parent.getGroupInforamtion();
-          var myForm = document.getElementById('uploadform');
-          myForm.setAttribute('action','/addMessage_file/'+info);
-
-          function sendWebsocket(){
-            var text = document.getElementById('doc').value;
-            var pos=text.lastIndexOf("\\");
-            text=text.substring(pos+1);
-            if(text.indexOf(".jpg")!=-1 || text.indexOf(".png")!=-1||text.indexOf(".gif")!=-1||text.indexOf(".jpeg")!=-1 ||  text.indexOf(".bmp")!=-1){
-              window.parent.sendmessage("img", text);
-            }else
-              window.parent.sendmessage("doc", text);
-          }
-
-  </script>
 
 }

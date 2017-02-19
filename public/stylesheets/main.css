@@ -107,6 +107,14 @@ input.chatPanel__input {
     font-weight: 500!important;
 }
 
+
+.responsive-image {
+    max-width: 100%;
+}
+.imagesAndDocumentsPanel {
+    height: 100%;
+    overflow: scroll;
+}
 *::-webkit-input-placeholder {
     color: #4db6ac!important;
 }

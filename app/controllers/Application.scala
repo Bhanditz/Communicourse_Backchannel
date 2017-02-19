@@ -2,7 +2,7 @@ package controllers
 
 import javax.inject.Inject
 import javax.inject.Singleton
-
+import java.io.File
 import play.api.libs.json._
 import CommunicationProtocol.Message
 import CommunicationProtocol.ClientMessage
@@ -20,6 +20,7 @@ import play.api.i18n.Messages.Implicits._
 
 import scala.concurrent.duration._
 import CommunicationProtocol._
+import com.google.common.io.Files
 import play.api.mvc.WebSocket.FrameFormatter
 import services.UserService
 
@@ -100,14 +101,15 @@ class Application @Inject() (system: ActorSystem) extends Controller {
   }
 
   def uploadView = Action {implicit req =>
-    Ok(views.html.uploads(req, req.session.get("username").get, allChatRooms = chatrooms.keys))
+    Ok(views.html.upload(req, req.session.get("username").get, allChatRooms = chatrooms.keys,
+      Play.getFile("public/uploaded/images").list,
+      Play.getFile("public/uploaded/documents").list))
   }
 
 
   /*UPLOAD*/
   def upload = Action(parse.multipartFormData) { req =>
     req.body.file("file").map { file =>
-      import java.io.File
       val filename = file.filename
       val contentType = file.contentType
       val imagesDirectory = Play.application.path + "/public/uploaded/images/"
@@ -120,32 +122,36 @@ class Application @Inject() (system: ActorSystem) extends Controller {
       if (!docDirectory.exists()){
         docDirectory.mkdirs();
       }
-      def rename(file: File, version: Int): File ={
-        import com.google.common.io.Files
-        file.exists match {
-          case true => {
-            rename(
-              new File(Files.getNameWithoutExtension(file.getAbsolutePath) +
-                s"(${version})" + Files.getFileExtension(file.getAbsolutePath)),
-              version+1
-            )
-          }
-          case false => file
-        }
-      }
       if(filename.contains(".jpg") || filename.contains(".png") ||filename.contains(".gif")){
-        val toCheck = new File(imagesDirectory + filename)
-        file.ref.moveTo(rename(toCheck,0))
+        file.ref.moveTo(rename(imagesDirectory, filename))
       } else {
-        val toCheck = new File(documentsDirectory + filename)
-        file.ref.moveTo(rename(toCheck,0))
+        file.ref.moveTo(rename(documentsDirectory, filename))
       }
-      Redirect(routes.Application.upload())
+      Redirect(routes.Application.upload()).flashing(
+        "sucess" -> "File uploaded")
     }.getOrElse {
       Redirect(routes.Application.upload()).flashing(
         "error" -> "Missing file") //TODO toast clientseitig
     }
   }
+
+  def rename(directory: String, fName: String): File ={
+    val file = new File(directory + fName)
+    file.exists match {
+      case true => {
+        val extension = Files.getFileExtension(fName)
+        val withoutExtension = Files.getNameWithoutExtension(fName)
+        val regex = """([^(]*)\((\d+)\)""".r
+        val newVersion: String = regex findFirstIn fName match {
+          case Some(regex(pre, version)) => pre + "("+ (version.toInt+1)+ ")" + "." + extension
+          case None => withoutExtension + "(0)." + extension
+        }
+        rename(directory, newVersion)
+      }
+      case false => file
+    }
+  }
+
 
 
 }
