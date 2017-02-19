@@ -106,17 +106,40 @@ class Application @Inject() (system: ActorSystem) extends Controller {
 
   /*UPLOAD*/
   def upload = Action(parse.multipartFormData) { req =>
-    req.body.file("picture").map { picture =>
+    req.body.file("file").map { file =>
       import java.io.File
-      val filename = picture.filename
-      val contentType = picture.contentType
+      val filename = file.filename
+      val contentType = file.contentType
       val imagesDirectory = Play.application.path + "/public/uploaded/images/"
       val documentsDirectory = Play.application.path + "/public/uploaded/documents/"
-      val directory = new File(String.valueOf(imagesDirectory));
-      if (!directory.exists()){
-        directory.mkdirs();
+      val imgDirectory = new File(String.valueOf(imagesDirectory));
+      if (!imgDirectory.exists()){
+        imgDirectory.mkdirs();
       }
-      picture.ref.moveTo(new File(imagesDirectory + filename))
+      val docDirectory = new File(String.valueOf(imagesDirectory));
+      if (!docDirectory.exists()){
+        docDirectory.mkdirs();
+      }
+      def rename(file: File, version: Int): File ={
+        import com.google.common.io.Files
+        file.exists match {
+          case true => {
+            rename(
+              new File(Files.getNameWithoutExtension(file.getAbsolutePath) +
+                s"(${version})" + Files.getFileExtension(file.getAbsolutePath)),
+              version+1
+            )
+          }
+          case false => file
+        }
+      }
+      if(filename.contains(".jpg") || filename.contains(".png") ||filename.contains(".gif")){
+        val toCheck = new File(imagesDirectory + filename)
+        file.ref.moveTo(rename(toCheck,0))
+      } else {
+        val toCheck = new File(documentsDirectory + filename)
+        file.ref.moveTo(rename(toCheck,0))
+      }
       Redirect(routes.Application.upload())
     }.getOrElse {
       Redirect(routes.Application.upload()).flashing(
