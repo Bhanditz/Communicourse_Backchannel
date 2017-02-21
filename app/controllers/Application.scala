@@ -106,15 +106,10 @@ class Application @Inject() (system: ActorSystem) extends Controller {
 
   def uploadView = Action.async {implicit req =>
     for {
-      uploads <- allUploads
+      uploads <- allUploads_
     } yield Ok(views.html.upload(req, req.session.get("username").get, chatrooms.keys, uploads))
 
     //Ok(views.html.upload(req, req.session.get("username").get, chatrooms.keys, uploads.result))
-  }
-
-  def testUpload = Action.async {
-    implicit req =>
-      userUpload("romue", "WAT?").map(i => Ok(i.toString))
   }
 
   def rename(directory: String, fName: String): (String, String) ={
@@ -167,7 +162,7 @@ class Application @Inject() (system: ActorSystem) extends Controller {
 
           for {
             uploadDb <- userUpload(username, folder + newFilename)
-            uploadsList <- allUploads
+            uploadsList <- allUploads_
           } yield Ok(views.html.upload(request, username, chatrooms.keys, uploadsList))
 
 

@@ -67,7 +67,7 @@ class UploadController extends Controller
 
               for {
                 uploadDb <- userUpload(username, dir + filename)
-                uploadsList <- allUploads
+                uploadsList <- allUploads_
               } yield Ok(views.html.upload(request, request.session.get("username").get, Nil, uploadsList))
 
 

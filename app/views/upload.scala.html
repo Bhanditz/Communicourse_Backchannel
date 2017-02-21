@@ -1,4 +1,4 @@
-@(implicit req: RequestHeader,username: String, allChatRooms: Iterable[String], uploads: Seq[Upload])
+@(implicit req: RequestHeader,username: String, allChatRooms: Iterable[String], uploads: Seq[(String, Long, String, Long)])
 @main("Box") {
 
   <form class = "uploadFileForm" action="@routes.Application.upload" method="post" enctype="multipart/form-data">
@@ -22,21 +22,21 @@
           <ul class = "collection">
             <li class="collection-header"><h4>Images</h4></li>
             @for(upload <- uploads){
-              @if(upload.path.contains("image")){
+              @if(upload._3.contains("image")){
               <li class="collection-item avatar">
                 <i class="material-icons pink circle">insert_photo</i>
-                <a href="uploaded@upload.path">
-                  <span class="title">@upload.path.substring(upload.path.lastIndexOf("/")+1)</span>
+                <a href="@routes.Assets.at("uploaded"+upload._3)">
+                  <span class="title">@upload._3.substring(upload._3.lastIndexOf("/")+1)</span>
                 </a>
-                <p>@upload.userId<br>
-                  @if(((System.currentTimeMillis()/1000 - upload.timestamp)/60/60) < 1){
-                    @((System.currentTimeMillis()/1000 - upload.timestamp)/60) minutes ago
+                <p>by @upload._1<br>
+                  @if(((System.currentTimeMillis()/1000 - upload._4)/60/60) < 1){
+                    @((System.currentTimeMillis()/1000 - upload._4)/60) minutes ago
                   }
-                  @if(((System.currentTimeMillis()/1000 - upload.timestamp)/60/60) >24){
-                    @((System.currentTimeMillis()/1000 - upload.timestamp)/60/60/60) days ago
+                  @if(((System.currentTimeMillis()/1000 - upload._4)/60/60) >24){
+                    @((System.currentTimeMillis()/1000 - upload._4)/60/60/60) days ago
                   }
-                  @if(((System.currentTimeMillis()/1000 - upload.timestamp)/60/60) < 24 && ((System.currentTimeMillis()/1000 - upload.timestamp)/60/60) > 1){
-                    @((System.currentTimeMillis()/1000 - upload.timestamp)/60/60) hours ago
+                  @if(((System.currentTimeMillis()/1000 - upload._4)/60/60) < 24 && ((System.currentTimeMillis()/1000 - upload._4)/60/60) > 1){
+                    @((System.currentTimeMillis()/1000 - upload._4)/60/60) hours ago
                   }
                 </p>
               </li>
@@ -47,28 +47,27 @@
         <div class = "col s12 l6">
           <ul class = "collection">
             <li class="collection-header"><h4>Documents</h4></li>
-          @for(upload <- uploads){
-            @if(upload.path.contains("document")){
-            <li class="collection-item avatar">
-              <i class="material-icons teal circle">attach_file</i>
-              <a href="uploaded@upload.path">
-                <span class="title">@upload.path.substring(upload.path.lastIndexOf("/")+1)</span>
-              </a>
-              <p>@upload.userId<br>
-                @if(((System.currentTimeMillis()/1000 - upload.timestamp)/60/60) < 1){
-                  @((System.currentTimeMillis()/1000 - upload.timestamp)/60) minutes ago
-                }
-                @if(((System.currentTimeMillis()/1000 - upload.timestamp)/60/60) >24){
-                  @((System.currentTimeMillis()/1000 - upload.timestamp)/60/60/60) days ago
-                }
-                @if(((System.currentTimeMillis()/1000 - upload.timestamp)/60/60) < 24 && ((System.currentTimeMillis()/1000 - upload.timestamp)/60/60) > 1){
-                  @((System.currentTimeMillis()/1000 - upload.timestamp)/60/60) hours ago
-                }
-
-                </p>
-            </li>
+            @for(upload <- uploads){
+              @if(upload._3.contains("document")){
+                <li class="collection-item avatar">
+                  <i class="material-icons teal circle">attach_file</i>
+                  <a href="@routes.Assets.at("uploaded"+upload._3)">
+                    <span class="title">@upload._3.substring(upload._3.lastIndexOf("/")+1)</span>
+                  </a>
+                  <p>by @upload._1<br>
+                    @if(((System.currentTimeMillis()/1000 - upload._4)/60/60) < 1){
+                      @((System.currentTimeMillis()/1000 - upload._4)/60) minutes ago
+                    }
+                    @if(((System.currentTimeMillis()/1000 - upload._4)/60/60) >24){
+                      @((System.currentTimeMillis()/1000 - upload._4)/60/60/60) days ago
+                    }
+                    @if(((System.currentTimeMillis()/1000 - upload._4)/60/60) < 24 && ((System.currentTimeMillis()/1000 - upload._4)/60/60) > 1){
+                      @((System.currentTimeMillis()/1000 - upload._4)/60/60) hours ago
+                    }
+                  </p>
+                </li>
+              }
             }
-          }
           </ul>
         </div>
       </div>

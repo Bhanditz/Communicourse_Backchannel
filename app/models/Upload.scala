@@ -58,8 +58,15 @@ object Upload {
       )
 
   def allUploads: Future[Seq[Upload]] =
-    dbConfig.db.run(
-      uploads.sortBy(_.timestamp).result
-    )
+  dbConfig.db.run(
+    uploads.sortBy(_.timestamp).result
+  )
+
+  def allUploadsJoined =
+      for {
+        (ul, u) <- uploads join models.Users.users on (_.userId === _.id)
+      } yield (u.userName, ul.userId, ul.path, ul.timestamp)
+
+  def allUploads_ = dbConfig.db.run(allUploadsJoined.result)
 
 }
