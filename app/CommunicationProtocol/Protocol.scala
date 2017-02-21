@@ -11,9 +11,7 @@ import akka.util.Timeout
 
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
-/**
-  * Created by robertMueller on 15.02.17.
-  */
+
 object Protocol {
 
   def messageCheck(clientMessage: ClientMessage,botLang: BotLanguage, bot: ActorRef, sender: ActorRef): Either[ChatroomMessage, Any] = {

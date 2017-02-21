@@ -3,9 +3,7 @@ package CommunicationProtocol
 import CommunicationProtocol.Chatroom.{Broadcast, Unicast}
 import akka.actor.ActorRef
 
-/**
-  * Created by robertMueller on 14.02.17.
-  */
+
 object BotInstructions {
   val BOTREFERENCE = "hey_"
   val BOTNAME = "arjen"

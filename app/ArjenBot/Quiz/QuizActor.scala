@@ -10,9 +10,6 @@ package Quiz
  import scalaz.State
  import scalaz._
 
-/**
-  * Created by robertMueller on 30.01.17.
-  */
 
 object QuizActor{
   val props = Props[QuizActor]

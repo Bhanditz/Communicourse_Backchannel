@@ -2,9 +2,7 @@ package Quiz
 
 import scalaz.State
 import Types._
-/**
-  * Created by robertMueller on 30.01.17.
-  */
+
 
 case class Quiz(
                 val quizName: String = "",

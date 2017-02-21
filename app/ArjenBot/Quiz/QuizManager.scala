@@ -5,12 +5,6 @@ import Types._
 import MyLens._
 import MyLens.containsKey
 
-
-
-/**
-  * Created by robertMueller on 10.02.17.
-  */
-
 case class QuizManager(val publishedQuizzes: Map[String, (Quiz, UserQuizAnswers)] = Map(),
                        val pendingQuizzes: Map[String,  State[QuizState, Quiz]] = Map(),
                        val scoreboard: Map[String, Int]= Map()

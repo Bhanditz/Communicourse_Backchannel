@@ -2,9 +2,7 @@ package Quiz
 import Types._
 import scalaz.{Lens, State}
 
-/**
-  * Created by robertMueller on 09.02.17.
-  */
+
 
 object QuizManagement {
   def apply(): QuizManagement ={

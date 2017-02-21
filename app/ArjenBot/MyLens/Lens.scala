@@ -1,8 +1,5 @@
 package MyLens
 
-/**
-  * Created by robertMueller on 10.02.17.
-  */
 case class MyLens[A,B](get: A => B, set: (A,B) => A) extends Function1[A, B] with Immutable{
   //f: A -> B
   def apply(a: A): B = get(a)

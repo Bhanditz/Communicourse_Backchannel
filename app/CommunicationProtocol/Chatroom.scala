@@ -9,9 +9,7 @@ import akka.util.Timeout
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
-/**
-  * Created by robertMueller on 15.02.17.
-  */
+
 
 object Chatroom {
   def props(name: String) = Props(new Chatroom(name))

@@ -1,4 +1,4 @@
-@(implicit req: RequestHeader,username: String, allChatRooms: Iterable[String], images: Array[String], documents: Array[String])
+@(implicit req: RequestHeader,username: String, allChatRooms: Iterable[String], uploads: Seq[Upload])
 @main("Box") {
 
   <form class = "uploadFileForm" action="@routes.Application.upload" method="post" enctype="multipart/form-data">
@@ -21,44 +21,59 @@
         <div class = "col s12 l6">
           <ul class = "collection">
             <li class="collection-header"><h4>Images</h4></li>
-            @for(image <- images){
+            @for(upload <- uploads){
+              @if(upload.path.contains("image")){
               <li class="collection-item avatar">
                 <i class="material-icons pink circle">insert_photo</i>
-                <a href="@routes.Assets.at("uploaded/images/"+image)">
-                  <span class="title">@image</span>
+                <a href="uploaded@upload.path">
+                  <span class="title">@upload.path.substring(upload.path.lastIndexOf("/")+1)</span>
                 </a>
-                <p>First Line <br>
-                  Second Line
+                <p>@upload.userId<br>
+                  @if(((System.currentTimeMillis()/1000 - upload.timestamp)/60/60) < 1){
+                    @((System.currentTimeMillis()/1000 - upload.timestamp)/60) minutes ago
+                  }
+                  @if(((System.currentTimeMillis()/1000 - upload.timestamp)/60/60) >24){
+                    @((System.currentTimeMillis()/1000 - upload.timestamp)/60/60/60) days ago
+                  }
+                  @if(((System.currentTimeMillis()/1000 - upload.timestamp)/60/60) < 24 && ((System.currentTimeMillis()/1000 - upload.timestamp)/60/60) > 1){
+                    @((System.currentTimeMillis()/1000 - upload.timestamp)/60/60) hours ago
+                  }
                 </p>
               </li>
+              }
             }
           </ul>
         </div>
         <div class = "col s12 l6">
           <ul class = "collection">
             <li class="collection-header"><h4>Documents</h4></li>
-          @for(document <- documents){
+          @for(upload <- uploads){
+            @if(upload.path.contains("document")){
             <li class="collection-item avatar">
               <i class="material-icons teal circle">attach_file</i>
-              <a href="@routes.Assets.at("uploaded/documents/"+document)">
-                <span class="title">@document</span>
+              <a href="uploaded@upload.path">
+                <span class="title">@upload.path.substring(upload.path.lastIndexOf("/")+1)</span>
               </a>
-              <p>First Line <br>
-                Second Line
+              <p>@upload.userId<br>
+                @if(((System.currentTimeMillis()/1000 - upload.timestamp)/60/60) < 1){
+                  @((System.currentTimeMillis()/1000 - upload.timestamp)/60) minutes ago
+                }
+                @if(((System.currentTimeMillis()/1000 - upload.timestamp)/60/60) >24){
+                  @((System.currentTimeMillis()/1000 - upload.timestamp)/60/60/60) days ago
+                }
+                @if(((System.currentTimeMillis()/1000 - upload.timestamp)/60/60) < 24 && ((System.currentTimeMillis()/1000 - upload.timestamp)/60/60) > 1){
+                  @((System.currentTimeMillis()/1000 - upload.timestamp)/60/60) hours ago
+                }
+
                 </p>
             </li>
+            }
           }
           </ul>
         </div>
       </div>
 
 
-      <!--<form action="@routes.Application.upload" method="post" enctype="multipart/form-data" style="position: absolute; bottom: 0;">
-        <div>
-          <input type="file" name="file"/>
-        </div>
-        <input type="submit" value="upload it"/>
-      </form>-->
 
     </div>
 

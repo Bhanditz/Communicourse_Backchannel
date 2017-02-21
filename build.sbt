@@ -6,7 +6,7 @@ lazy val `backchannel` = (project in file(".")).enablePlugins(PlayScala)
 
 scalaVersion := "2.11.7"
 
-libraryDependencies ++= Seq(cache , ws   , specs2 % Test )
+libraryDependencies ++= Seq(cache , ws, evolutions  , specs2 % Test )
 
 libraryDependencies += "org.scalaz" %% "scalaz-core" % "7.2.8"
 

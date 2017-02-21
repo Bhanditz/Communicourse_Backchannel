@@ -3,6 +3,7 @@ package controllers
 import javax.inject.Inject
 import javax.inject.Singleton
 import java.io.File
+
 import play.api.libs.json._
 import CommunicationProtocol.Message
 import CommunicationProtocol.ClientMessage
@@ -18,10 +19,9 @@ import akka.util.Timeout
 import play.api.Play.current
 import play.api.i18n.Messages.Implicits._
 
-import scala.concurrent.duration._
-import CommunicationProtocol._
+import models.Upload._
 import com.google.common.io.Files
-import play.api.mvc.WebSocket.FrameFormatter
+
 import services.UserService
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -30,6 +30,9 @@ import scala.concurrent.Future
 
 @Singleton
 class Application @Inject() (system: ActorSystem) extends Controller {
+
+  /*=====DB=====*/
+
 
   /*=====Chatroom Management=====*/
   val chatroomSystem = ActorSystem("chatroom-actor-system")
@@ -68,6 +71,7 @@ class Application @Inject() (system: ActorSystem) extends Controller {
     Ok(views.html.register(models.UserFormData.form))
   }
 
+
   def loginSubmission = Action.async {implicit req =>
     models.LoginUserFormData.form.bindFromRequest.fold(
       formWithErrors => Future(BadRequest),
@@ -100,47 +104,20 @@ class Application @Inject() (system: ActorSystem) extends Controller {
     )
   }
 
-  def uploadView = Action {implicit req =>
-    Ok(views.html.upload(req, req.session.get("username").get, allChatRooms = chatrooms.keys,
-      Play.getFile("public/uploaded/images").list,
-      Play.getFile("public/uploaded/documents").list))
+  def uploadView = Action.async {implicit req =>
+    for {
+      uploads <- allUploads
+    } yield Ok(views.html.upload(req, req.session.get("username").get, chatrooms.keys, uploads))
+
+    //Ok(views.html.upload(req, req.session.get("username").get, chatrooms.keys, uploads.result))
   }
 
-
-  /*UPLOAD*/
-  def upload = Action(parse.multipartFormData) { req =>
-    req.body.file("file").map { file =>
-      val filename = file.filename
-      val contentType = file.contentType
-      val imagesDirectory = Play.application.path + "/public/uploaded/images/"
-      val documentsDirectory = Play.application.path + "/public/uploaded/documents/"
-      val imgDirectory = new File(String.valueOf(imagesDirectory));
-      if (!imgDirectory.exists()){
-        imgDirectory.mkdirs();
-      }
-      val docDirectory = new File(String.valueOf(imagesDirectory));
-      if (!docDirectory.exists()){
-        docDirectory.mkdirs();
-      }
-      if(filename.contains(".jpg") || filename.contains(".png") ||filename.contains(".gif")){
-        file.ref.moveTo(rename(imagesDirectory, filename))
-      } else {
-        file.ref.moveTo(rename(documentsDirectory, filename))
-      }
-      chatrooms.foreach(cr =>
-        cr._2.chatroom ! CommunicationProtocol.BotInstructions.botBroadcast(
-         s"${req.session.get("username").getOrElse("")} just uploaded a file"
-        )
-      )
-      Redirect(routes.Application.upload()).flashing(
-        "sucess" -> "File uploaded")
-    }.getOrElse {
-      Redirect(routes.Application.upload()).flashing(
-        "error" -> "Missing file") //TODO toast clientseitig
-    }
+  def testUpload = Action.async {
+    implicit req =>
+      userUpload("romue", "WAT?").map(i => Ok(i.toString))
   }
 
-  def rename(directory: String, fName: String): File ={
+  def rename(directory: String, fName: String): (String, String) ={
     val file = new File(directory + fName)
     file.exists match {
       case true => {
@@ -153,10 +130,52 @@ class Application @Inject() (system: ActorSystem) extends Controller {
         }
         rename(directory, newVersion)
       }
-      case false => file
+      case false => (directory, fName)
     }
   }
 
+  def upload =
+  //(f: (RequestHeader, Seq[Upload], String) => Result)
+    Action.async(parse.multipartFormData){request =>
+      request.session.get("username").map {username =>
+        request.body.file("file").map { file =>
+          val filename = file.filename
+          val contentType = file.contentType
+          val imagesFolder = "/images/"
+          val documetsFolder = "/documents/"
+          val imagesDirectory = Play.application.path + "/public/uploaded/images/"
+          val documentsDirectory = Play.application.path + "/public/uploaded/documents/"
+          val imgDirectory = new File(String.valueOf(imagesDirectory));
+          if (!imgDirectory.exists()){
+            imgDirectory.mkdirs()
+          }
+          val docDirectory = new File(String.valueOf(imagesDirectory));
+          if (!docDirectory.exists()){
+            docDirectory.mkdirs()
+          }
+          var dir = ""
+          var folder = ""
+          if(filename.contains(".jpg") || filename.contains(".png") ||filename.contains(".gif")){
+            dir = imagesDirectory
+            folder = imagesFolder
+          } else {
+            dir = documentsDirectory
+            folder = documetsFolder
+          }
+          val (_, newFilename) = rename(dir, filename)
+          file.ref.moveTo(new File(dir + newFilename))
+
+          for {
+            uploadDb <- userUpload(username, folder + newFilename)
+            uploadsList <- allUploads
+          } yield Ok(views.html.upload(request, username, chatrooms.keys, uploadsList))
+
+
+        }.getOrElse(Future(Redirect(routes.Application.uploadView()))) // flashing
+
+      }.getOrElse(Future(Redirect(routes.Application.login())))
+
+    }
 
 
 }

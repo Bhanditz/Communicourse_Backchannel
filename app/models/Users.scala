@@ -11,11 +11,6 @@ import slick.driver.JdbcProfile
 import slick.driver.MySQLDriver.api._
 import scala.concurrent.ExecutionContext.Implicits.global
 
-/**
-  * Created by robertMueller on 17.02.17.
-  */
-
-
 
 case class User(id: Long, role: String, userName: String, password: String, email: String)
 
@@ -59,7 +54,7 @@ object Users {
 
   val dbConfig = DatabaseConfigProvider.get[JdbcProfile](Play.current)
 
-  val users = TableQuery[UserTableDef]
+  lazy val users = TableQuery[UserTableDef]
 
   def add(user: User): Future[String] = {
     dbConfig.db.run(users += user).map(res => "User successfully added").recover {

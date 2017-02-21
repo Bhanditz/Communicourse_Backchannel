@@ -6,9 +6,6 @@ import scala.util.parsing.combinator._
 import scala.util.parsing.combinator.JavaTokenParsers
 import Types._
 
-/**
-  * Created by robertMueller on 13.02.17.
-  */
 
 class QuizBotLanguage extends BotLanguage{
 

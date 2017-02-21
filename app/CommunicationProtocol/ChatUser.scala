@@ -4,9 +4,7 @@ import CommunicationProtocol.Chatroom.{Join, Leave}
 import akka.actor.{Actor, ActorRef, Props}
 import akka.event.LoggingReceive
 
-/**
-  * Created by robertMueller on 15.02.17.
-  */
+
 
 object ChatUser{
   def props(out: ActorRef, chatroom: ActorRef) = Props(new ChatUser(out, chatroom))
