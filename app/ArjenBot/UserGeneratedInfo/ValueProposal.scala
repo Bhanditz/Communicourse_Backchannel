@@ -40,9 +40,14 @@ object ValueProposal {
   def withMessage(proposal: ValueProposal, msg : String): ValueProposal = proposal.copy(message = Some(msg))
   def upvoteDownvoteRate(proposal: ValueProposal): Double = proposal.upvotedBy.size/proposal.downvotedBy.size
   def upvoteDownvoteCount(proposal: ValueProposal): Int = proposal.upvotedBy.size+proposal.downvotedBy.size
-  val minCountForDeletion = 3
+  val minCountForDeletion = 2
   val maxRateForDeletion = 1.5
-  def mayBeDeleted(proposal: ValueProposal) = upvoteDownvoteRate(proposal) <= maxRateForDeletion && upvoteDownvoteCount(proposal) > minCountForDeletion
+  def mayBeDeleted(proposal: ValueProposal) =
+    try {
+    upvoteDownvoteRate(proposal) <= maxRateForDeletion && upvoteDownvoteCount(proposal) >= minCountForDeletion
+  } catch  {
+    case e:java.lang.ArithmeticException => false
+  }
   def rename(proposal: ValueProposal, version: Int) = {
     val pattern =  """"([^"]*)"""".r
     val newName = proposal.infoName match {
