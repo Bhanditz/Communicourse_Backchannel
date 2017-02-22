@@ -15,7 +15,7 @@ case class ValueProposal(val infoName: String, val infoValue: String, val messag
 {
   override def toString():String = {
     val sep = System.lineSeparator
-    sep+"="*15 + sep + s"${this.infoName}: ${this.infoName}"+sep+s"upvotes: ${this.upvotedBy.size} downvotes: ${this.downvotedBy.size}" +sep + "="*15 + sep
+    sep+"="*15 + sep + s"${this.infoName}: ${this.infoValue}"+sep+s"upvotes: ${this.upvotedBy.size} downvotes: ${this.downvotedBy.size}" +sep + "="*15 + sep
   }
 }
 
