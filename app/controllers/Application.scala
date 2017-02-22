@@ -40,8 +40,11 @@ class Application @Inject() (system: ActorSystem) extends Controller {
   def newChatroom(name: String) = chatrooms += (name -> new ChatroomController(system, chatroomSystem, name))
   def getChatroom(name: String) = chatrooms.get(name).getOrElse(defaultRoom).chatUserSocket //TODO arjen soll was sagen
 
-  def chatHttp(implicit req: RequestHeader, username: String, chatroomName: String = defaultRoomName) =
-    Ok(views.html.chat(req, username, chatroomName, chatrooms.keys))
+  def chatHttp(implicit req: RequestHeader, username: String, chatroomName: String = defaultRoomName) = {
+    val role = req.session.get("role").getOrElse("student")
+      Ok(views.html.chat(req, username, role, chatroomName, chatrooms.keys))
+  }
+
 
   def chat(username: String, chatroomName: String) = Action {
     implicit req =>
@@ -59,10 +62,10 @@ class Application @Inject() (system: ActorSystem) extends Controller {
       )
   }
 
-//TODO back to login if session is empty
+//back to login if session is empty
   /*=====Authorization=====*/
   def login = Action {implicit req =>
-    Ok(views.html.login())
+    Ok(views.html.login("success"))
   }
 
   def register = Action {implicit req=>
@@ -74,12 +77,13 @@ class Application @Inject() (system: ActorSystem) extends Controller {
     models.LoginUserFormData.form.bindFromRequest.fold(
       formWithErrors => Future(BadRequest),
       userLoginData =>  {
-        UserService.checkUser(userLoginData.userName, userLoginData.password).map(_.isEmpty).map(b => {
-          b match {
-            case true => Unauthorized(views.html.login())
-            case false => chatHttp(req, userLoginData.userName).withSession("username"->userLoginData.userName)
-          }
-        })
+        UserService.checkUser(userLoginData.userName, userLoginData.password).map(user => {
+          user match {
+            case None => Unauthorized(views.html.login("login unsuccessfull"))
+            case Some(u) =>  chatHttp(req, u.userName).withSession(
+              "username"->u.userName, "role"->u.role)
+            }
+          })
       }
     )
   }
@@ -95,7 +99,7 @@ class Application @Inject() (system: ActorSystem) extends Controller {
         val role_ = if(userData.role.toLowerCase == "teacher") "teacher" else "student"
         val newUser = models.User(0,role_,userData.userName, userData.password, userData.email)
         UserService.addUser(newUser).map(res => { //TODO verbessern
-          Redirect(routes.Application.chat(newUser.userName, defaultRoomName)).withSession({"username"->newUser.userName})
+          Redirect(routes.Application.chat(newUser.userName, defaultRoomName)).withSession("username"->newUser.userName, "role"->role_)
         })
 
       }
@@ -105,7 +109,7 @@ class Application @Inject() (system: ActorSystem) extends Controller {
   def uploadView = Action.async {implicit req =>
     for {
       uploads <- allUploads_
-    } yield Ok(views.html.upload(req, req.session.get("username").get, chatrooms.keys, uploads))
+    } yield Ok(views.html.upload(req, req.session.get("role").get, req.session.get("username").get, chatrooms.keys, uploads))
 
     //Ok(views.html.upload(req, req.session.get("username").get, chatrooms.keys, uploads.result))
   }
@@ -169,7 +173,7 @@ class Application @Inject() (system: ActorSystem) extends Controller {
           for {
             uploadDb <- userUpload(username, folder + newFilename)
             uploadsList <- allUploads_
-          } yield Ok(views.html.upload(request, username, chatrooms.keys, uploadsList))
+          } yield Ok(views.html.upload(request, username, request.session.get("role").getOrElse("student"), chatrooms.keys, uploadsList))
 
 
         }.getOrElse(Future(Redirect(routes.Application.uploadView()))) // flashing

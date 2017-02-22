@@ -28,6 +28,7 @@ class ChatroomController @Inject() (system: ActorSystem, chatroomSystem: ActorSy
   implicit val messageFormat = Json.format[ClientMessage]
   implicit val messageFrameFormatter = FrameFormatter.jsonFrame[ClientMessage]
   def chatUserSocket = WebSocket.acceptWithActor[ClientMessage, ClientMessage] { request => out =>
-    ChatUser.props(out, chatroom)
+    val role = request.session.get("role").getOrElse("student")
+    ChatUser.props(out, chatroom, role)
   }
 }

@@ -1,4 +1,4 @@
-@(implicit req: RequestHeader,username: String, chatroomName: String, allChatRooms: Iterable[String])
+@(implicit req: RequestHeader,username: String, role: String, chatroomName: String,  allChatRooms: Iterable[String])
 
 @main("room: "+ chatroomName ) {
 
@@ -9,7 +9,7 @@
 
         <div class="row root">
 
-            @templates.chatroom_panel(req, username, chatroomName, allChatRooms)
+            @templates.chatroom_panel(req, username, role, chatroomName, allChatRooms)
 
             <div class="col s8 m9 l9 chatPanel grey lighten-2">
                 <div id="chat"></div>

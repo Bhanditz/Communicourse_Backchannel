@@ -1,10 +1,13 @@
-@(implicit req: RequestHeader, username: String, currentChatroom: String,  allChatRooms: Iterable[String])
+@(implicit req: RequestHeader, username: String, role: String, currentChatroom: String,  allChatRooms: Iterable[String])
 
 
-  <div class="col s4 m3 l3 chatroomPanel teal lighten-1">
+<div class="col s4 m3 l3 chatroomPanel teal lighten-1" xmlns="http://www.w3.org/1999/html">
     <div class = "row">
       <div class = "col s12">
-        <h4 class = "">Communicourse</h4>
+      <h4 class = "">Communicourse</h4>
+    </div>
+      <div class = "col s12">
+        <p class = "">Name: @username  Role: @role</p>
       </div>
       <div class = "col s12">
         <ul class = "chatroomPanel__chatrooms collection">
@@ -24,6 +27,8 @@
       </div>
     </div>
 
+
+
     <div class="row">
       <div class="input-field col s12">
         <form  action='@routes.Application.createChatroom()' method="post" >
@@ -33,13 +38,10 @@
         </form>
       </div>
     </div>
-
-    <div class="row">
+      <div class="row">
       <div class="col s12">
-        <a class="waves-effect waves-light btn"><i class="material-icons left">add</i>New Room</a>
-        <a class="waves-effect waves-light btn" href = "@routes.Application.uploadView()"><i class="material-icons right">move_to_inbox</i>UniBox</a>
+        <a class="waves-effect waves-light btn" href = "@routes.Application.uploadView()"><i class="material-icons left">move_to_inbox</i>UniBox</a>
       </div>
-    </div>
-
+      </div>
 
   </div>

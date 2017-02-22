@@ -7,10 +7,10 @@ import akka.event.LoggingReceive
 
 
 object ChatUser{
-  def props(out: ActorRef, chatroom: ActorRef) = Props(new ChatUser(out, chatroom))
+  def props(out: ActorRef, chatroom: ActorRef, role: String) = Props(new ChatUser(out, chatroom, role))
 }
 
-class ChatUser(out: ActorRef, chatroom: ActorRef)extends Actor{
+class ChatUser(out: ActorRef, chatroom: ActorRef, role: String) extends Actor{
 
 
   @scala.throws[Exception](classOf[Exception])
@@ -23,6 +23,6 @@ class ChatUser(out: ActorRef, chatroom: ActorRef)extends Actor{
     case prm @ PrivateMessage(m,u,b) => out ! ClientMessage(m, u + "(private) " ,b)
     case pm @ PublicMessage(m,u,b) => out ! ClientMessage(m,u,b)
     /*=====UPWARDS MESSAGES=====*/
-    case cm @ ClientMessage(m,_,_) => chatroom ! cm // hoch
+    case cm @ ClientMessage(m,u,ag) => chatroom ! ClientMessageWithRole(m,u,ag, role) // hoch
   }
 }

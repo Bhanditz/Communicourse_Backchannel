@@ -86,8 +86,25 @@ object Protocol {
 
   }
 
+  trait QuizCommandAuthorization
+  case class UnauthorizedQuizCommand(message: Any) extends QuizCommandAuthorization
+  case class AuthorizedQuizCommand(message: Any) extends QuizCommandAuthorization
+  def authorizationCheck(sender: ActorRef,message: Any, role: String)(implicit ec: ExecutionContext) = {
+    if(role.toLowerCase.contains("teacher")){
+      AuthorizedQuizCommand(message)
+    } else {
+      message match {
+        case QuizActor.NewQuiz(_) => UnauthorizedQuizCommand(botUnicast("Sorry, only teachers are allowed to create quizzes", sender))
+        case QuizActor.AddQuizQuestion(_,_) => UnauthorizedQuizCommand(botUnicast("Sorry, only teachers are allowed to add questions to quizzes", sender))
+        case QuizActor.AddQuizAnswers(_, _) => UnauthorizedQuizCommand(botUnicast("Sorry, only teachers are allowed to add answers to quizzes", sender))
+        case QuizActor.PublishQuiz(_) => UnauthorizedQuizCommand(botUnicast("Sorry, only teachers are allowed to publish  quizzes", sender))
+        case QuizActor.EvaluateQuiz(_) => UnauthorizedQuizCommand(botUnicast("Sorry, only teachers are allowed to evaluate quizzes", sender))
+        case QuizActor.GetPendingQuizzes => UnauthorizedQuizCommand(botUnicast("Sorry, only teachers are allowed to get pending quizzes", sender))
+        case _ => AuthorizedQuizCommand(message)
+      }
+    }
+  }
 
-  def authorizationCheck(quizName: String, user: String) = ???
   def processParsedQuizMessages(bot: ActorRef)(sender: ActorRef)(message: Any)(implicit ec: ExecutionContext): Future[ChatroomMessage] = {
     implicit val timeout = Timeout(2.seconds)
     message match {

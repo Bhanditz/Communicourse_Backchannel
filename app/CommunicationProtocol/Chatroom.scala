@@ -26,15 +26,19 @@ class Chatroom(val name: String) extends Actor {
   var users: Set[ActorRef] = Set.empty
 
   override def receive: Receive = {
-    case cm@ClientMessage(m,u,_) => {
+    case cm@ClientMessageWithRole(m,u,_,role) => {
 
       //FUTURES! - DO THE MESSAGE PASSING INSIDE OF THE FUTURE OR THE ACTOR WILL CLOSE OVER / BLOCK
-      Protocol.messageCheck(cm, new QuizBotLanguage, quizBot, sender()).fold(
-        _ => Protocol.messageCheck(cm, new UserGeneratedInfoLanguage, userGeneratedInfoBot,sender()).fold(
-          message => {self ! message},
-          processValueProposalMessages(userGeneratedInfoBot)(sender())(_) foreach(m_ => self ! m_)
-        ),
-        processParsedQuizMessages(quizBot)(sender())(_) foreach (m_ => self ! m_)
+      Protocol.messageCheck(cm.asClientMessage, new QuizBotLanguage, quizBot, sender()).fold(
+        _ => Protocol.messageCheck(cm.asClientMessage, new UserGeneratedInfoLanguage, userGeneratedInfoBot,sender()).fold(
+          message => {self ! message}, //normal message, send message to self
+          processValueProposalMessages(userGeneratedInfoBot)(sender)(_) foreach(m_ => self ! m_)
+        ),{
+          quizCommand: Any =>  authorizationCheck(sender, quizCommand, role) match {
+            case UnauthorizedQuizCommand(command) => self ! command
+            case AuthorizedQuizCommand(command) => processParsedQuizMessages(quizBot)(sender)(command) foreach (m_ => self ! m_)
+          }
+        }
       )}
 
     case Broadcast(message) => users.foreach(_ ! message)

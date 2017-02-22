@@ -70,8 +70,12 @@ object Users {
     dbConfig.db.run(users.filter(_.id === id.toLong).result)
   }
 
-  def check(userName: String, password: String): Future[Seq[User]] = {
-    dbConfig.db.run(users.filter(_.userName === userName).filter( _.password === password).result)
+  def getUserByName(name: String): Future[Option[User]] = {
+    dbConfig.db.run(users.filter(_.userName === name).result.headOption)
+  }
+
+  def check(userName: String, password: String): Future[Option[User]] = {
+    dbConfig.db.run(users.filter(_.userName === userName).filter( _.password === password).result.headOption)
   }
 
   def checkpassword(id: Long, password: String): Future[Seq[User]] = {

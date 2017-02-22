@@ -28,7 +28,7 @@ object UserService {
     Users.get(id)
   }
 
-  def checkUser(userName: String, password: String): Future[Seq[User]] = {
+  def checkUser(userName: String, password: String): Future[Option[User]] = {
     Users.check(userName,password)
   }
 

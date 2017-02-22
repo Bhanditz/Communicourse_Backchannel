@@ -1,4 +1,4 @@
-@(implicit req: RequestHeader,username: String, allChatRooms: Iterable[String], uploads: Seq[(String, Long, String, Long, Long)])
+@(implicit req: RequestHeader,username: String, role: String, allChatRooms: Iterable[String], uploads: Seq[(String, Long, String, Long, Long)])
 @main("Box") {
 
   <form class = "uploadFileForm" action="@routes.Application.upload" method="post" enctype="multipart/form-data">
@@ -12,7 +12,7 @@
 
   <div class="row root">
 
-    @templates.chatroom_panel(req, username, "", allChatRooms)
+    @templates.chatroom_panel(req, username, role, "", allChatRooms)
 
 
     <div class="col s8 m9 l9 chatPanel imagesAndDocumentsPanel grey lighten-2" >
