@@ -64,12 +64,13 @@ class Application @Inject() (system: ActorSystem) extends Controller {
 
 //back to login if session is empty
   /*=====Authorization=====*/
-  def login = Action {implicit req =>
-    Ok(views.html.login("success"))
+  def home = login("")
+  def login(message: String = "") = Action {implicit req =>
+    Ok(views.html.login(models.LoginUserFormData.form, message))
   }
 
   def register = Action {implicit req=>
-    Ok(views.html.register(models.UserFormData.form))
+    Ok(views.html.register(models.UserFormData.form, ""))
   }
 
 
@@ -79,7 +80,7 @@ class Application @Inject() (system: ActorSystem) extends Controller {
       userLoginData =>  {
         UserService.checkUser(userLoginData.userName, userLoginData.password).map(user => {
           user match {
-            case None => Unauthorized(views.html.login("login unsuccessfull"))
+            case None => Unauthorized(views.html.login(models.LoginUserFormData.form, "Wrong credentials, try again"))
             case Some(u) =>  chatHttp(req, u.userName).withSession(
               "username"->u.userName, "role"->u.role)
             }
@@ -91,16 +92,22 @@ class Application @Inject() (system: ActorSystem) extends Controller {
   def registerSubmission = Action.async {implicit req =>
     models.UserFormData.form.bindFromRequest.fold(
       formWithErrors => {
-        Future(BadRequest(views.html.register(models.UserFormData.form))) //or redirect // clientside error
+        Future(BadRequest(views.html.register(models.UserFormData.form, "An error occured, try again"))) //or redirect // clientside error
         //((Future.successful(Redirect(routes.Application.chat("guest")).withSession({"username"-> "guest"}))
       },
       userData => {
         //could be improved qith case object
         val role_ = if(userData.role.toLowerCase == "teacher") "teacher" else "student"
         val newUser = models.User(0,role_,userData.userName, userData.password, userData.email)
-        UserService.addUser(newUser).map(res => { //TODO verbessern
-          Redirect(routes.Application.chat(newUser.userName, defaultRoomName)).withSession("username"->newUser.userName, "role"->role_)
-        })
+        models.Users.getUserByName(userData.userName).flatMap(u =>
+          u match {
+            case Some(user)=> Future(BadRequest(views.html.register(models.UserFormData.form, "This username already exists")))
+            case None => UserService.addUser(newUser).map(res => { //TODO verbessern
+              Redirect(routes.Application.chat(newUser.userName, defaultRoomName)).withSession("username"->newUser.userName, "role"->role_)
+            })
+          }
+        )
+
 
       }
     )
@@ -178,7 +185,7 @@ class Application @Inject() (system: ActorSystem) extends Controller {
 
         }.getOrElse(Future(Redirect(routes.Application.uploadView()))) // flashing
 
-      }.getOrElse(Future(Redirect(routes.Application.login())))
+      }.getOrElse(Future(Unauthorized(views.html.login(models.LoginUserFormData.form,"You are not logged in anymore"))))
 
     }
 

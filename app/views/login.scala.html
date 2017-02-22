@@ -1,4 +1,4 @@
-@(toast: String)
+@(userLoginForm: Form[LoginUserFormData], toast: String)(implicit messages: Messages)
 @main("Login") {
   <div class="row container">
     <div class="input-field col s12">
@@ -30,13 +30,13 @@
         </div>
       </div>
 
-        <div class = "row">
+      <div class = "row">
         <div class="col s12">
           <div class="center-align">
             <a class="waves-effect waves-light btn halfWidth" href="@routes.Application.register()">Register</a>
           </div>
         </div>
-        </div>
+      </div>
 
 
 

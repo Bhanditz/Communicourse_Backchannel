@@ -3,7 +3,7 @@
 # ~~~~
 
 # Home page
-GET         /                                    @controllers.Application.login
+GET /                                            @controllers.Application.home
 GET         /chat/:username/:chatroomName        @controllers.Application.chat(username: String, chatroomName: String)
 POST        /newChatroom                         @controllers.Application.createChatroom
 GET         /chatroomSocket/:chatroomName        @controllers.Application.getChatroom(chatroomName: String)
@@ -13,7 +13,7 @@ POST        /loggedIn                            @controllers.Application.loginS
 
 GET         /upload                              @controllers.Application.uploadView
 POST        /upload                              @controllers.Application.upload
-POST      /upload/:id/                         @controllers.Application.deleteUpload(id: Long)
+POST      /upload/:id/                           @controllers.Application.deleteUpload(id: Long)
 
 # Map static resources from the /public folder to the /assets URL path
 GET         /assets/*file                        @controllers.Assets.at(path="/public", file)
