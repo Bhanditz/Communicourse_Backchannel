@@ -1,6 +1,9 @@
 package models
 
 
+import java.io.File
+
+import ch.qos.logback.core.util.FileUtil
 import play.api.Play
 import play.api.db.slick.DatabaseConfigProvider
 import slick.dbio.DBIOAction
@@ -65,8 +68,22 @@ object Upload {
   def allUploadsJoined =
       for {
         (ul, u) <- uploads join models.Users.users on (_.userId === _.id)
-      } yield (u.userName, ul.userId, ul.path, ul.timestamp)
+      } yield (u.userName, ul.userId, ul.path, ul.timestamp, ul.id)
 
   def allUploads_ = dbConfig.db.run(allUploadsJoined.result)
+
+  def deleteUploadById(id: Long) = dbConfig.db.run(uploads.filter(_.id === id).delete)
+
+  import play.api.Play.current
+  def quietlyRemove_(id: Long) =
+    for {
+      ul <- uploads.filter((_.id=== id)).result
+    } yield (ul.headOption.map(u=>  {
+      new File(Play.application.path + "/public/uploaded" + u.path).delete()
+        Play.application.path + "/public/uploaded" + u.path
+    }))
+
+  def quietlyRemove(id: Long): Future[Option[String]] = dbConfig.db.run(quietlyRemove_(id))
+
 
 }

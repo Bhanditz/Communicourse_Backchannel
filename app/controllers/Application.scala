@@ -18,10 +18,8 @@ import akka.actor._
 import akka.util.Timeout
 import play.api.Play.current
 import play.api.i18n.Messages.Implicits._
-
 import models.Upload._
 import com.google.common.io.Files
-
 import services.UserService
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -110,6 +108,14 @@ class Application @Inject() (system: ActorSystem) extends Controller {
     } yield Ok(views.html.upload(req, req.session.get("username").get, chatrooms.keys, uploads))
 
     //Ok(views.html.upload(req, req.session.get("username").get, chatrooms.keys, uploads.result))
+  }
+
+  def deleteUpload(id: Long) = Action.async {
+    implicit req =>
+      for {
+        _ <- quietlyRemove(id)
+        _ <- deleteUploadById(id)
+      } yield Redirect(routes.Application.uploadView())
   }
 
   def rename(directory: String, fName: String): (String, String) ={

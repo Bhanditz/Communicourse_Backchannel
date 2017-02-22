@@ -13,7 +13,7 @@ POST        /loggedIn                            @controllers.Application.loginS
 
 GET         /upload                              @controllers.Application.uploadView
 POST        /upload                              @controllers.Application.upload
-
+POST      /upload/:id/                         @controllers.Application.deleteUpload(id: Long)
 
 # Map static resources from the /public folder to the /assets URL path
 GET         /assets/*file                        @controllers.Assets.at(path="/public", file)

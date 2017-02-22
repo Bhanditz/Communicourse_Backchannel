@@ -1,4 +1,4 @@
-@(implicit req: RequestHeader,username: String, allChatRooms: Iterable[String], uploads: Seq[(String, Long, String, Long)])
+@(implicit req: RequestHeader,username: String, allChatRooms: Iterable[String], uploads: Seq[(String, Long, String, Long, Long)])
 @main("Box") {
 
   <form class = "uploadFileForm" action="@routes.Application.upload" method="post" enctype="multipart/form-data">
@@ -39,6 +39,12 @@
                     @((System.currentTimeMillis()/1000 - upload._4)/60/60) hours ago
                   }
                 </p>
+                @if(username == upload._1){
+                  <form action="@routes.Application.deleteUpload(upload._5)" method="post" class ="secondary-content">
+                      <input type="submit" class = "hideForm" id="submit" name="submit"/>
+                      <label class ="pointer" for="submit"><i class="material-icons red-text text-lighten-2">delete</i></label>
+                  </form>
+                }
               </li>
               }
             }
@@ -65,6 +71,9 @@
                       @((System.currentTimeMillis()/1000 - upload._4)/60/60) hours ago
                     }
                   </p>
+                  @if(username == upload._1){
+                    <a href="@routes.Application.deleteUpload(upload._5)" class="secondary-content"><i class="material-icons red-text text-lighten-2">delete</i></a>
+                  }
                 </li>
               }
             }
